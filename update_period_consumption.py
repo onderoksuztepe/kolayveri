@@ -1,7 +1,7 @@
 from datetime import datetime
 from pymongo import MongoClient
 
-MONGO_URI = "mongodb+srv://onderoksuztepe_db:<OnderKolayveri2025>@kolayveri.t0lyzeu.mongodb.net/"
+MONGO_URI = "mongodb+srv://onderoksuztepe_db:OnderKolayveri2025@kolayveri.t0lyzeu.mongodb.net/"
 DB_NAME = "amimavialp"
 METERS_COLL = "meters"
 
@@ -61,3 +61,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
