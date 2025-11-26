@@ -9,7 +9,7 @@ from pymongo import MongoClient
 #  KONFİG
 # ============================
 
-MONGO_URI = "mongodb+srv://onderoksuztepe_db:<OnderKolayveri2025>@kolayveri.t0lyzeu.mongodb.net/"
+MONGO_URI = "mongodb+srv://onderoksuztepe_db:OnderKolayveri2025@kolayveri.t0lyzeu.mongodb.net/"
 DB_NAME = "amimavialp"
 METERS_COLL = "meters"
 READINGS_COLL = "readings"
@@ -561,3 +561,4 @@ def api_meter_readings(
         )
 
     return result
+
