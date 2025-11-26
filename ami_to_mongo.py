@@ -11,7 +11,7 @@ from requests.exceptions import HTTPError, ReadTimeout, RequestException
 # ============================
 
 # MongoDB
-MONGO_URI = "mongodb+srv://onderoksuztepe_db:<OnderKolayveri2025>@kolayveri.t0lyzeu.mongodb.net/"
+MONGO_URI = "mongodb+srv://onderoksuztepe_db:OnderKolayveri2025@kolayveri.t0lyzeu.mongodb.net/"
 DB_NAME = "amimavialp"
 METERS_COLL = "meters"
 READINGS_COLL = "readings"
@@ -204,3 +204,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
