@@ -1,0 +1,7 @@
+﻿source,reason,ami_meter_serial,normalized_serial,action,mongo_meter_serial,mongo_name,mongo_status
+ami,AMI numeric-only record; auto-add disabled,2386493,2386493,review_before_add,,,
+ami,AMI numeric-only record; auto-add disabled,5077584,5077584,review_before_add,,,
+ami,AMI numeric-only record; auto-add disabled,2378736,2378736,review_before_add,,,
+ami,AMI numeric-only record; auto-add disabled,51167519,51167519,review_before_add,,,
+mongo,Mongo numeric-only record missing in AMI; possible typo/mapping issue,,50775584,review_before_inactivate,50775584,A-057 B-1 TİCARİ KAT (H MİMARLIK),not_found
+mongo,Mongo numeric-only record missing in AMI; possible typo/mapping issue,,2777641,review_before_inactivate,2777641,A1-379 TİCARİ 1 KAT ,not_found

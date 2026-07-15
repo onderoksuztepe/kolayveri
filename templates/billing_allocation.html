@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.billing-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.billing-chart-row {
+    display: grid;
+    grid-template-columns: minmax(280px, 1.5fr) minmax(260px, 3fr) 150px;
+    gap: 14px;
+    align-items: center;
+}
+
+.billing-chart-label {
+    font-size: 14px;
+    color: #15233b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.billing-chart-label strong {
+    display: inline-flex;
+    min-width: 34px;
+    height: 26px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #e8f7ff;
+    color: #2d7bd9;
+    margin-right: 8px;
+}
+
+.billing-chart-track {
+    height: 18px;
+    background: #edf2f7;
+    border-radius: 999px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.billing-chart-bar {
+    height: 100%;
+    min-width: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2d7bd9, #7e49d3);
+}
+
+.billing-chart-value {
+    font-size: 13px;
+    color: #64748b;
+    text-align: right;
+    font-weight: 600;
+}
+
+@media (max-width: 1000px) {
+    .billing-chart-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .billing-chart-value {
+        text-align: left;
+    }
+}
+</style>
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Faturalar</div>
+        <div class="small">
+            Seçili dönem: {{ period }}
+            {% if active_period and active_period != period %}
+            / Aktif dönem: {{ active_period }}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="small" style="text-align:right;">
+        {% if calc %}
+        Alt sayaç toplamı: {{ calc.fmt(calc.subtotal_consumption, 2) }} kWh
+        <br>
+        <a href="/billing-allocation.csv?period={{ period }}" class="btn-secondary" style="display:inline-block; margin-top:8px;">CSV İndir</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if saved %}
+<div class="card" style="margin-bottom:16px; border-color:#b7ebc6;">
+    <strong>Kayıt güncellendi.</strong>
+    <div class="small">Ana sayaç tüketimi ve birim fiyat kaydedildi. Paylaştırma yeniden hesaplandı.</div>
+</div>
+{% endif %}
+
+<div class="card billing-period-selector" style="margin-bottom:16px;">
+    <h2>Dönem Seçimi</h2>
+    <p class="small">
+        Faturalar ekranı varsayılan olarak son kapalı dönemi açar. Başka dönem görmek için buradan seç.
+    </p>
+
+    <form method="get" action="/billing-allocation" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
+        <input type="hidden" name="period" value="{{ period }}">
+
+        <div>
+            <label class="small">Dönem</label><br>
+            <div style="padding:10px 12px; border-radius:10px; border:1px solid #e6ebf2; background:#f8fafc; min-width:150px;">
+                {{ period }}
+            </div>
+        </div>
+
+        <button type="submit" class="btn-primary">Göster</button>
+    </form>
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+    <h2>Giriş Bilgileri</h2>
+    <p class="small">
+        Ana sayaç tüketimi ile alt sayaç toplamı arasındaki fark kayıp tüketim olarak hesaplanır ve sayaç tüketim oranlarına göre dağıtılır.
+    </p>
+
+    <form method="post" action="/billing-allocation" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
+        <div>
+            <label class="small">Dönem</label><br>
+            <select name="period" style="padding:10px; border-radius:10px;">
+                {% for p in available_periods %}
+                <option value="{{ p.period_code }}" {% if p.period_code == period %}selected{% endif %}>
+                    {{ p.period_code }} - {{ 'Açık' if p.status == 'open' else 'Kapalı' if p.status == 'closed' else p.status }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label class="small">Ana Sayaç Tüketimi kWh</label><br>
+            <input type="text" name="main_meter_consumption"
+                   value="{% if calc and calc.main_meter_consumption is not none %}{{ calc.fmt(calc.main_meter_consumption, 3) }}{% endif %}"
+                   placeholder="Örn: 35187,000"
+                   style="padding:10px; border-radius:10px; min-width:190px;">
+        </div>
+
+        <div>
+            <label class="small">Birim Fiyat TL/kWh</label><br>
+            <input type="text" name="unit_price"
+                   value="{% if calc and calc.unit_price is not none %}{{ calc.fmt(calc.unit_price, 6) }}{% endif %}"
+                   placeholder="Örn: 3,250000"
+                   style="padding:10px; border-radius:10px; min-width:170px;">
+        </div>
+
+        <div style="flex:1; min-width:220px;">
+            <label class="small">Not</label><br>
+            <input type="text" name="note"
+                   value="{% if calc %}{{ calc.note }}{% endif %}"
+                   placeholder="İsteğe bağlı açıklama"
+                   style="padding:10px; border-radius:10px; width:100%;">
+        </div>
+
+        <button type="submit" class="btn-primary">Kaydet / Hesapla</button>
+    </form>
+</div>
+
+{% if calc %}
+<div class="grid cards-4">
+    <div class="card stat">
+        <div class="small">Alt Sayaç Toplamı</div>
+        <div class="stat-value">{{ calc.fmt(calc.subtotal_consumption, 2) }}</div>
+        <div class="small">kWh</div>
+    </div>
+
+    <div class="card stat">
+        <div class="small">Ana Sayaç Tüketimi</div>
+        <div class="stat-value">
+            {% if calc.main_meter_consumption is not none %}
+            {{ calc.fmt(calc.main_meter_consumption, 2) }}
+            {% else %}
+            -
+            {% endif %}
+        </div>
+        <div class="small">kWh</div>
+    </div>
+
+    <div class="card stat">
+        <div class="small">Kayıp Tüketim</div>
+        <div class="stat-value {% if calc.loss_consumption is not none and calc.loss_consumption < 0 %}metric-danger{% else %}metric-warn{% endif %}">
+            {% if calc.loss_consumption is not none %}
+            {{ calc.fmt(calc.loss_consumption, 2) }}
+            {% else %}
+            -
+            {% endif %}
+        </div>
+        <div class="small">
+            {% if calc.loss_ratio_pct is not none %}
+            {{ calc.fmt(calc.loss_ratio_pct, 2) }} %
+            {% else %}
+            Ana sayaç girilmedi
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card stat">
+        <div class="small">Toplam Fatura</div>
+        <div class="stat-value">
+            {% if calc.total_bill_amount is not none %}
+            {{ calc.fmt(calc.total_bill_amount, 2) }}
+            {% else %}
+            -
+            {% endif %}
+        </div>
+        <div class="small">TL</div>
+    </div>
+</div>
+
+{% if calc.loss_consumption is not none and calc.loss_consumption < 0 %}
+<div class="card" style="margin-bottom:16px; border-color:#f3b5bd;">
+    <strong>Dikkat:</strong>
+    <div class="small">
+        Ana sayaç tüketimi, alt sayaç toplamından düşük görünüyor. Ana sayaç tüketimi veya eksik sayaç endekslerini kontrol etmek gerekir.
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <h2>En Yüksek Tüketimli 10 Sayaç</h2>
+    <p class="small">Grafik kayıp dahil faturalandırılacak kWh değerine göre sıralanmıştır.</p>
+
+    <div class="billing-chart">
+        {% for r in calc.top10 %}
+        <div class="billing-chart-row">
+            <div class="billing-chart-label" title="{{ r.meter_name or r.meter_serial }}">
+                <strong>{{ r.sort_order or "-" }}</strong>
+                {{ r.meter_name or r.meter_serial }}
+            </div>
+
+            <div class="billing-chart-track">
+                <div class="billing-chart-bar" style="width: {{ r.bar_pct }}%;"></div>
+            </div>
+
+            <div class="billing-chart-value">{{ calc.fmt(r.chart_consumption, 2) }} kWh</div>
+        </div>
+        {% else %}
+        <div class="small">Grafik için hesaplanmış tüketim bulunamadı.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card">
+    <h2>Sayaç Bazlı Faturalar</h2>
+    <p class="small">
+        Kayıp tüketim, sadece pozitif tüketimi olan sayaçlara tüketim oranına göre dağıtılır.
+    </p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Sıra</th>
+                <th>Sayaç No</th>
+                <th>Sayaç Adı</th>
+                <th>Tüketim</th>
+                <th>Pay</th>
+                <th>Kayıp Payı</th>
+                <th>Fatura kWh</th>
+                <th>Birim Fiyat</th>
+                <th>Tutar</th>
+                <th>Durum</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in calc.rows %}
+            <tr>
+                <td>{{ r.sort_order or "-" }}</td>
+                <td>{{ r.meter_serial }}</td>
+                <td>{{ r.meter_name }}</td>
+                <td>{% if r.active_consumption is not none %}{{ calc.fmt(r.active_consumption, 2) }} kWh{% else %}-{% endif %}</td>
+                <td>{% if r.share_pct is not none %}{{ calc.fmt(r.share_pct, 4) }} %{% else %}-{% endif %}</td>
+                <td>{% if r.loss_share is not none %}{{ calc.fmt(r.loss_share, 3) }} kWh{% else %}-{% endif %}</td>
+                <td>{% if r.invoice_consumption is not none %}{{ calc.fmt(r.invoice_consumption, 3) }} kWh{% else %}-{% endif %}</td>
+                <td>{% if calc.unit_price is not none %}{{ calc.fmt(calc.unit_price, 6) }}{% else %}-{% endif %}</td>
+                <td>{% if r.invoice_amount is not none %}{{ calc.fmt(r.invoice_amount, 2) }} TL{% else %}-{% endif %}</td>
+                <td>
+                    <span class="badge {% if r.calculation_status == 'calculated' %}badge-ok{% else %}badge-pending{% endif %}">
+                        {{ r.calculation_status_tr or r.calculation_status }}
+                    </span>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="10">Kayıt bulunamadı.</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

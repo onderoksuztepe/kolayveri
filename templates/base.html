@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <title>KolayVeri</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css?v=20260706-logo-fix">
+</head>
+<body>
+
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand">
+            <img class="brand-logo" src="/static/img/kolayveri-logo.png?v=real-logo-1" alt="KolayVeri">
+        </div>
+
+        {% if selected_site %}
+        <div class="site-selector">
+            {% if user and user.billing_group_id %}
+                <div class="site-label">Alt Kullanıcı</div>
+                <div class="site-locked">
+                    {{ user.billing_group_name or "Alt Kullanıcı" }}
+                </div>
+            {% else %}
+                <div class="site-label">Seçili Tesis</div>
+
+                {% if user and user.is_admin %}
+                <form method="post" action="/select-site">
+                    <input type="hidden" name="next_url" value="{{ request.url.path }}">
+                    <select name="site_id" onchange="this.form.submit()">
+                        {% for s in sites %}
+                        <option value="{{ s.site_id }}" {% if selected_site_id == s.site_id %}selected{% endif %}>
+                            {{ s.customer_name }} / {{ s.site_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </form>
+                {% else %}
+                <div class="site-locked">
+                    {{ selected_site.customer_name }} / {{ selected_site.site_name }}
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <nav class="nav">
+            {% if user and user.billing_group_id %}
+                <a href="/meters" class="{% if request.url.path == '/meters' %}active{% endif %}">Sayaçlar</a>
+                <a href="/billing-allocation" class="{% if request.url.path == '/billing-allocation' %}active{% endif %}">Faturalar</a>
+                <a href="/logout">Çıkış</a>
+            {% else %}
+                <a href="/dashboard" class="{% if request.url.path == '/dashboard' %}active{% endif %}">Anasayfa</a>
+                <a href="/meters" class="{% if request.url.path == '/meters' %}active{% endif %}">Sayaçlar</a>
+                <a href="/period-consumption" class="{% if request.url.path == '/period-consumption' %}active{% endif %}">Dönem Tüketimleri</a>
+                <a href="/billing-allocation" class="{% if request.url.path == '/billing-allocation' %}active{% endif %}">Faturalar</a>
+                <a href="/reactive-consumption" class="{% if request.url.path == '/reactive-consumption' %}active{% endif %}">Reaktif Tüketim</a>
+                <a href="/monthly-consumption-tracking" class="{% if request.url.path == '/monthly-consumption-tracking' %}active{% endif %}">Aylık Tüketim Takip</a>
+
+                {% if user and user.is_admin %}
+                    <a href="/admin-data-import" class="{% if request.url.path == '/admin-data-import' %}active{% endif %}">Geçmiş Veri Yükleme</a>
+                    <a href="/period-management" class="{% if request.url.path == '/period-management' %}active{% endif %}">Dönem Yönetimi</a>
+                {% endif %}
+
+                <a href="/index-entry" class="{% if request.url.path == '/index-entry' %}active{% endif %}">Endeks Girişi</a>
+                <a href="/logout">Çıkış</a>
+            {% endif %}
+        </nav>
+    </aside>
+
+    <main class="main">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+</body>
+</html>

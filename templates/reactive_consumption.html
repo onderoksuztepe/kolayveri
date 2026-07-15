@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="topbar">
+    <div>
+        <div class="page-title">Reaktif Tüketim</div>
+        <div class="small">
+            Seçili dönem: {{ period }}
+            {% if active_period and active_period != period %}
+            / Aktif dönem: {{ active_period }}
+            {% endif %}
+        </div>
+
+        <form method="get" action="/reactive-consumption" style="margin-top:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <select name="period" style="padding:10px; border-radius:10px; border:1px solid #e6ebf2;">
+                {% for p in available_periods %}
+                <option value="{{ p.period_code }}" {% if p.period_code == period %}selected{% endif %}>
+                    {{ p.period_code }} - {{ 'Açık' if p.status == 'open' else 'Kapalı' if p.status == 'closed' else p.status }}
+                </option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="filter" value="{{ filter_type }}">
+            {% if q %}
+            <input type="hidden" name="q" value="{{ q }}">
+            {% endif %}
+            <button type="submit" class="btn-primary">Göster</button>
+        </form>
+    </div>
+    <div class="small" style="text-align:right;">
+        <div>Gösterilen: {{ summary.total_meters }} / {{ summary.total_before_filter }} sayaç</div>
+        <div style="margin-top:8px;">
+            <a href="/reactive-consumption.csv?period={{ period }}&filter={{ filter_type }}{% if q %}&q={{ q|urlencode }}{% endif %}" class="btn-secondary">CSV İndir</a>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:16px;">
+    <form method="get" action="/reactive-consumption" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
+        <input type="hidden" name="period" value="{{ period }}">
+        <div>
+            <label class="small">Filtre</label><br>
+            <select name="filter" style="padding:10px; min-width:240px; border-radius:8px;">
+                <option value="all" {% if filter_type == "all" %}selected{% endif %}>Tümü</option>
+                <option value="over_limit" {% if filter_type == "over_limit" %}selected{% endif %}>Limit Aşımı</option>
+                <option value="inductive_over" {% if filter_type == "inductive_over" %}selected{% endif %}>Endüktif Aşım</option>
+                <option value="capacitive_over" {% if filter_type == "capacitive_over" %}selected{% endif %}>Kapasitif Aşım</option>
+                <option value="missing" {% if filter_type == "missing" %}selected{% endif %}>Endeks Eksik</option>
+                <option value="low_consumption" {% if filter_type == "low_consumption" %}selected{% endif %}>Düşük Tüketim / Kontrol</option>
+                <option value="control" {% if filter_type == "control" %}selected{% endif %}>Kontrol</option>
+            </select>
+        </div>
+
+        <div style="flex:1; min-width:260px;">
+            <label class="small">Arama</label><br>
+            <input type="text" name="q" value="{{ q }}" placeholder="Sayaç no, sayaç adı veya cihaz no" style="padding:10px; width:100%; border-radius:8px;">
+        </div>
+
+        <div>
+            <button type="submit" class="btn-primary">Uygula</button>
+            <a href="/reactive-consumption" class="btn-secondary" style="margin-left:6px;">Temizle</a>
+        </div>
+    </form>
+</div>
+
+<div class="grid cards-4">
+    <div class="card stat">
+        <div class="small">Sayaç</div>
+        <div class="stat-value">{{ summary.total_meters }}</div>
+    </div>
+    <div class="card stat">
+        <div class="small">Endüktif Toplam</div>
+        <div class="stat-value">{{ "{:,.0f}".format(summary.total_inductive).replace(",", ".") }}</div>
+        <div class="small">kVArh</div>
+    </div>
+    <div class="card stat">
+        <div class="small">Kapasitif Toplam</div>
+        <div class="stat-value">{{ "{:,.0f}".format(summary.total_capacitive).replace(",", ".") }}</div>
+        <div class="small">kVArh</div>
+    </div>
+    <div class="card stat">
+        <div class="small">Operasyon</div>
+        <div class="stat-value">{{ summary.over_limit }}</div>
+        <div class="small">Eksik: {{ summary.missing }} / Düşük: {{ summary.low_consumption }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Reaktif Tüketim Listesi</h2>
+    <p class="small">
+        Limit kontrolü geçici olarak endüktif %20, kapasitif %15 eşikleriyle hesaplanmıştır.
+    </p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Sıra</th>
+                <th>Sayaç No</th>
+                <th>Sayaç Adı</th>
+                <th>Aktif kWh</th>
+                <th>Endüktif kVArh</th>
+                <th>Endüktif %</th>
+                <th>Kapasitif kVArh</th>
+                <th>Kapasitif %</th>
+                <th>Reaktif Durum</th>
+                <th>Limit</th>
+                <th>Operasyon</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in rows %}
+            <tr>
+                <td>{{ r.sort_order or "-" }}</td>
+                <td>{{ r.meter_serial or "-" }}</td>
+                <td>{{ r.meter_name or "-" }}</td>
+                <td>{% if r.active_consumption is not none %}{{ "{:,.2f}".format(r.active_consumption).replace(",", "X").replace(".", ",").replace("X", ".") }}{% else %}-{% endif %}</td>
+                <td>{% if r.inductive_consumption is not none %}{{ "{:,.2f}".format(r.inductive_consumption).replace(",", "X").replace(".", ",").replace("X", ".") }}{% else %}-{% endif %}</td>
+                <td>{% if r.inductive_ratio_pct is not none %}{{ "{:,.2f}".format(r.inductive_ratio_pct).replace(",", "X").replace(".", ",").replace("X", ".") }}%{% else %}-{% endif %}</td>
+                <td>{% if r.capacitive_consumption is not none %}{{ "{:,.2f}".format(r.capacitive_consumption).replace(",", "X").replace(".", ",").replace("X", ".") }}{% else %}-{% endif %}</td>
+                <td>{% if r.capacitive_ratio_pct is not none %}{{ "{:,.2f}".format(r.capacitive_ratio_pct).replace(",", "X").replace(".", ",").replace("X", ".") }}%{% else %}-{% endif %}</td>
+                <td><span class="badge {% if r.reactive_status == 'calculated' %}badge-ok{% else %}badge-pending{% endif %}">{{ r.reactive_status_tr }}</span></td>
+                <td><span class="badge {% if r.limit_status in ['Endüktif Limit Aşımı', 'Kapasitif Limit Aşımı'] %}badge-negative{% elif r.limit_status == 'Limit Altı' %}badge-ok{% else %}badge-pending{% endif %}">{{ r.limit_status }}</span></td>
+                <td><span class="badge {% if r.operational_status in ['Endüktif Limit Aşımı', 'Kapasitif Limit Aşımı'] %}badge-negative{% elif r.operational_status == 'Limit Altı' %}badge-ok{% else %}badge-pending{% endif %}">{{ r.operational_status }}</span></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="11">Seçili filtreye uygun kayıt bulunamadı.</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

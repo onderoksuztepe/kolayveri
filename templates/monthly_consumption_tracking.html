@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.monthly-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.monthly-search {
+    flex: 1;
+    min-width: 280px;
+    padding: 13px 14px;
+    border: 1px solid #e6ebf2;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.monthly-table-wrap {
+    overflow: auto;
+    max-height: calc(100vh - 260px);
+    border: 1px solid #e6ebf2;
+    border-radius: 14px;
+}
+
+.monthly-table {
+    min-width: 1100px;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.monthly-table th,
+.monthly-table td {
+    border-bottom: 1px solid #e6ebf2;
+    border-right: 1px solid #eef2f7;
+    padding: 12px 14px;
+    white-space: nowrap;
+    background: #fff;
+}
+
+.monthly-table th {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    background: #f8fafc;
+    color: #0f1d40;
+    font-weight: 700;
+}
+
+.monthly-table td.name-cell {
+    white-space: normal;
+    min-width: 280px;
+    max-width: 360px;
+}
+
+.monthly-table .sticky-1 {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+}
+
+.monthly-table .sticky-2 {
+    position: sticky;
+    left: 88px;
+    z-index: 3;
+}
+
+.monthly-table .sticky-3 {
+    position: sticky;
+    left: 230px;
+    z-index: 3;
+}
+
+.monthly-table th.sticky-1,
+.monthly-table th.sticky-2,
+.monthly-table th.sticky-3 {
+    z-index: 5;
+}
+
+.monthly-number {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.period-open {
+    color: #17854c;
+    font-size: 11px;
+    display: block;
+    margin-top: 3px;
+}
+
+.period-closed {
+    color: #6b7280;
+    font-size: 11px;
+    display: block;
+    margin-top: 3px;
+}
+</style>
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Aylık Tüketim Takip</div>
+        <div class="small">Aktif dönem: {{ active_period }}</div>
+    </div>
+
+    <div class="small" style="text-align:right;">
+        Gösterilen: {{ rows|length }} sayaç
+    </div>
+</div>
+
+<div class="card">
+    <div class="monthly-toolbar">
+        <form method="get" action="/monthly-consumption-tracking" style="display:flex; gap:10px; flex:1;">
+            <input class="monthly-search" type="text" name="q" value="{{ q }}" placeholder="Ara: sayaç no, sayaç adı veya cihaz no">
+            <button type="submit" class="btn-primary">Ara</button>
+            <a href="/monthly-consumption-tracking" class="btn-secondary">Temizle</a>
+        </form>
+
+        <a href="/monthly-consumption-tracking.csv{% if q %}?q={{ q|urlencode }}{% endif %}" class="btn-primary">
+            Dışa Aktar
+        </a>
+    </div>
+
+    <div class="monthly-table-wrap">
+        <table class="monthly-table">
+            <thead>
+            <tr>
+                <th class="sticky-1" style="min-width:88px;">Sıra No</th>
+                <th class="sticky-2" style="min-width:142px;">Sayaç Seri No</th>
+                <th class="sticky-3" style="min-width:320px;">Firma Adı ve Nereye Ait</th>
+                <th>Çarpan Değeri</th>
+                {% for p in period_headers %}
+                <th>
+                    {{ p.label }}
+                    <span class="{% if p.status == 'open' %}period-open{% else %}period-closed{% endif %}">
+                        {{ 'Açık' if p.status == 'open' else 'Kapalı' if p.status == 'closed' else p.status }}
+                    </span>
+                </th>
+                {% endfor %}
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for r in rows %}
+            <tr>
+                <td class="sticky-1 monthly-number">{{ r.sort_order or "-" }}</td>
+                <td class="sticky-2 monthly-number">{{ r.meter_serial }}</td>
+                <td class="sticky-3 name-cell">{{ r.meter_name }}</td>
+                <td class="monthly-number">{{ r.multiplier }}</td>
+
+                {% for pv in r.period_values %}
+                <td class="monthly-number">
+                    {% if pv.value is not none %}
+                        {{ pv.value_tr }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="{{ 4 + period_headers|length }}">Kayıt bulunamadı.</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

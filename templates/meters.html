@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="topbar">
+    <div>
+        <div class="page-title">Sayaçlar</div>
+        <div class="small">Aktif sayaç master listesi</div>
+    </div>
+</div>
+
+<div class="card">
+    <form method="get" action="/meters" class="filter-form">
+        <div class="filter-grid">
+            <div>
+                <label>Arama</label>
+                <input type="text" name="q" value="{{ q }}" placeholder="Sayaç no, ad, cihaz no, bölge...">
+            </div>
+
+            <div>
+                <label>Bölge</label>
+                <select name="region">
+                    <option value="">Tümü</option>
+                    {% for r in regions %}
+                        <option value="{{ r.region }}" {% if region == r.region %}selected{% endif %}>{{ r.region }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label>Durum</label>
+                <select name="status">
+                    <option value="">Tümü</option>
+                    {% for s in statuses %}
+                        <option value="{{ s.status }}" {% if status == s.status %}selected{% endif %}>
+                            {% if s.status == 'active' %}Aktif{% elif s.status == 'inactive' %}Pasif{% else %}{{ s.status }}{% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit">Filtrele</button>
+                <a href="/meters" class="btn-secondary">Temizle</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="table-head">
+        <div>
+            <strong>{{ rows|length }}</strong> sayaç listeleniyor
+        </div>
+        <div class="small">
+            {% if q or region or status %}
+                Filtre aktif
+            {% else %}
+                Tüm sayaçlar
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Sıra</th>
+                <th>Sayaç No</th>
+                <th>Sayaç Adı</th>
+                <th>Cihaz No</th>
+                <th>Bölge</th>
+                <th>Blok</th>
+                <th>Kat</th>
+                <th>Muhatap</th>
+                <th>Akım Trafo</th>
+                <th>Çarpan</th>
+                <th>Durum</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in rows %}
+            <tr>
+                <td>{{ r.sort_order or "-" }}</td>
+                <td>{{ r.meter_serial or "-" }}</td>
+                <td>{{ r.meter_name or "-" }}</td>
+                <td>{{ r.device_no or "-" }}</td>
+                <td>{{ r.region_text or "-" }}</td>
+                <td>{{ r.block_text or "-" }}</td>
+                <td>{{ r.floor_text or "-" }}</td>
+                <td>{{ r.muhatap or "-" }}</td>
+                <td>{{ r.current_transformer_ratio or "-" }}</td>
+                <td>{{ r.multiplier or "-" }}</td>
+                <td>{{ r.status_label or "-" }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="11">Bu filtreye uygun sayaç bulunamadı.</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

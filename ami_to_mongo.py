@@ -6,12 +6,28 @@ import requests
 from pymongo import MongoClient
 from requests.exceptions import HTTPError, ReadTimeout, RequestException
 
+from datetime import datetime, timezone, timedelta
+
+def _build_date_filters():
+    """
+    AMI için tarih filtresi üretir.
+    Son 2 gün (UTC) aralığını kullanıyoruz.
+    """
+    now_utc = datetime.now(timezone.utc)
+    start_utc = (now_utc - timedelta(days=2)).replace(hour=0, minute=0, second=0, microsecond=0)
+
+    fmt = "%Y-%m-%dT%H:%M:%SZ"
+    return {
+        "readed_at__gte": start_utc.strftime(fmt),
+        "readed_at__lte": now_utc.strftime(fmt)
+    }
+
 # ============================
 #  KONFİGÜRASYON
 # ============================
 
 # MongoDB
-MONGO_URI = "mongodb+srv://onderoksuztepe_db:OnderKolayveri2025@kolayveri.t0lyzeu.mongodb.net/"
+MONGO_URI = "mongodb://localhost:27017"
 DB_NAME = "amimavialp"
 METERS_COLL = "meters"
 READINGS_COLL = "readings"
@@ -32,8 +48,13 @@ readings_col = db[READINGS_COLL]
 # ============================
 
 def get_all_meters():
-    """meters koleksiyonundaki tüm sayaçları döner."""
-    return list(meters_col.find({}, {"meter_serial": 1, "_id": 0}))
+    """Sadece AMI master listesinde aktif olan sayaçları döner."""
+    return list(
+        meters_col.find(
+            {"ami_master_updated_at": {"$exists": True}},
+            {"meter_serial": 1, "_id": 0}
+        )
+    )
 
 
 def fetch_latest_reading(meter_serial: str):
@@ -51,7 +72,8 @@ def fetch_latest_reading(meter_serial: str):
         "Accept": "application/json",
     }
 
-    resp = requests.get(url, headers=headers, timeout=20)
+    params = _build_date_filters()
+    resp = requests.get(url, headers=headers, params=params, timeout=20)
     resp.raise_for_status()
     data = resp.json()
 
@@ -72,17 +94,27 @@ def fetch_latest_reading(meter_serial: str):
     # Örn: "2025-11-25T19:00:52+00:00"
     ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
 
-    # readData içinden 1.8.0 (total active energy) değerini çek
+    # readData içinden OBIS endekslerini çek
     read_data_str = raw.get("readData", "")
-    match = re.search(r"1\.8\.0\(([\d\.]+)\*kWh\)", read_data_str)
-    if not match:
-        raise ValueError(f"{meter_serial}: 1.8.0 değeri readData içinde bulunamadı.")
 
-    value = float(match.group(1))
+    def obis_value(code: str):
+        match = re.search(rf"{re.escape(code)}\(([\d\.]+)\*", read_data_str)
+        if not match:
+            return None
+        return float(match.group(1))
+
+    value = obis_value("1.8.0")
+    inductive_value = obis_value("5.8.0")
+    capacitive_value = obis_value("8.8.0")
+
+    if value is None:
+        raise ValueError(f"{meter_serial}: 1.8.0 değeri readData içinde bulunamadı.")
 
     return {
         "time": ts,
         "value": value,
+        "inductive_value": inductive_value,
+        "capacitive_value": capacitive_value,
         "raw": latest,
     }
 
@@ -103,6 +135,8 @@ def save_reading(meter_serial: str, reading: dict):
                 "meter_serial": meter_serial,
                 "time": reading["time"],
                 "value": reading["value"],
+                "inductive_value": reading.get("inductive_value"),
+                "capacitive_value": reading.get("capacitive_value"),
                 "raw": reading["raw"],
                 "created_at": datetime.now(timezone.utc),
             }
@@ -118,6 +152,8 @@ def save_reading(meter_serial: str, reading: dict):
                 "last_reading": {
                     "time": reading["time"],
                     "value": reading["value"],
+                    "inductive_value": reading.get("inductive_value"),
+                    "capacitive_value": reading.get("capacitive_value"),
                 },
                 "updated_at": datetime.now(timezone.utc),
             }

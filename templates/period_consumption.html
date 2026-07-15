@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="topbar">
+    <div>
+        <div class="page-title">Dönem Tüketimleri</div>
+        <div class="small">Seçili dönem: {{ period }}{% if active_period and active_period != period %} / Aktif dönem: {{ active_period }}{% endif %}</div>
+
+        <form method="get" action="/period-consumption" style="margin-top:12px; display:flex; gap:8px; align-items:center;">
+            <select name="period" style="padding:10px; border-radius:10px; border:1px solid #e6ebf2;">
+                {% for p in available_periods %}
+                <option value="{{ p.period_code }}" {% if p.period_code == period %}selected{% endif %}>
+                    {{ p.period_code }} - {{ 'Açık' if p.status == 'open' else 'Kapalı' if p.status == 'closed' else p.status }}
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn-primary">Göster</button>
+        </form>
+    </div>
+    <div class="small">
+        {% if summary %}
+            Toplam dönem tüketimi: {{ "{:,.0f}".format(summary.total_active_consumption).replace(",", ".") }} kWh
+        {% endif %}
+        <div style="margin-top:8px; text-align:right;">
+            <a href="/period-consumption.csv?period={{ period }}" class="btn-secondary">CSV İndir</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Tüm Sayaçlar</h2>
+    <p class="small">Dönem ilk endeksi, son okuma, hesaplanan tüketim ve sayaç durumu.</p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Sıra</th>
+                <th>Sayaç No</th>
+                <th>Sayaç Adı</th>
+                <th>Cihaz No</th>
+                <th>Çarpan</th>
+                <th>İlk Endeks</th>
+                <th>Son Endeks</th>
+                <th>Tüketim</th>
+                <th>Durum</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in rows %}
+            <tr>
+                <td>{{ r.sort_order }}</td>
+                <td>{{ r.meter_serial }}</td>
+                <td>{{ r.meter_name }}</td>
+                <td>{{ r.device_no }}</td>
+                <td>{{ r.multiplier }}</td>
+                <td>
+                    {% if r.first_active_index is not none %}
+                        {{ "{:,.3f}".format(r.first_active_index).replace(",", "X").replace(".", ",").replace("X", ".") }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if r.last_active_index is not none %}
+                        {{ "{:,.3f}".format(r.last_active_index).replace(",", "X").replace(".", ",").replace("X", ".") }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if r.active_consumption is not none %}
+                        {{ "{:,.2f}".format(r.active_consumption).replace(",", "X").replace(".", ",").replace("X", ".") }} kWh
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge {% if r.calculation_status == 'negative_consumption' %}badge-negative{% elif r.calculation_status == 'calculated' %}badge-ok{% else %}badge-pending{% endif %}">
+                        {{ r.calculation_status_tr }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

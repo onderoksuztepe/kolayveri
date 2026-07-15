@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Endeks Girişi</div>
+        <div class="small">
+            Seçili dönem: {{ period }}
+            {% if active_period and active_period != period %}
+            / Aktif dönem: {{ active_period }}
+            {% endif %}
+        </div>
+    </div>
+    <div class="small" style="text-align:right;">
+        Eksik kayıt sayısı: {{ rows|length }}
+    </div>
+</div>
+
+{% if saved %}
+<div class="card" style="margin-bottom:16px; border-color:#b7ebc6;">
+    <strong>Kayıt güncellendi.</strong>
+    <div class="small">Tüketim ve reaktif oranlar yeniden hesaplandı.</div>
+</div>
+{% endif %}
+
+<div class="card" style="margin-bottom:16px;">
+    <form method="get" action="/index-entry" style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
+        <div>
+            <label class="small">Dönem</label><br>
+            <select name="period" style="padding:10px; border-radius:10px;">
+                {% for p in available_periods %}
+                <option value="{{ p.period_code }}" {% if p.period_code == period %}selected{% endif %}>
+                    {{ p.period_code }} - {{ 'Açık' if p.status == 'open' else 'Kapalı' if p.status == 'closed' else p.status }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label class="small">Liste</label><br>
+            <select name="show" style="padding:10px; border-radius:10px;">
+                <option value="missing" {% if show == "missing" %}selected{% endif %}>Sadece Eksikler</option>
+                <option value="all" {% if show == "all" %}selected{% endif %}>Tüm Sayaçlar</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn-primary">Göster</button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Eksik Endeksler</h2>
+    <p class="small">
+        Değerleri nokta veya virgül ile girebilirsin. Örn: 10598.660 veya 10598,660.
+        Kaydedince sayaç tüketimi yeniden hesaplanır.
+    </p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Sıra</th>
+                <th>Sayaç No</th>
+                <th>Sayaç Adı</th>
+                <th>Eksik</th>
+                <th>İlk Aktif</th>
+                <th>Son Aktif</th>
+                <th>İlk End.</th>
+                <th>Son End.</th>
+                <th>İlk Kap.</th>
+                <th>Son Kap.</th>
+                <th>Kaydet</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in rows %}
+            <tr>
+                <form method="post" action="/index-entry">
+                    <input type="hidden" name="period" value="{{ period }}">
+                    <input type="hidden" name="meter_id" value="{{ r.meter_id }}">
+                    <input type="hidden" name="show" value="{{ show }}">
+
+                    <td>{{ r.sort_order or "-" }}</td>
+                    <td>{{ r.meter_serial }}</td>
+                    <td>{{ r.meter_name }}</td>
+                    <td><span class="badge {% if r.missing_text == 'Tamam' %}badge-ok{% else %}badge-pending{% endif %}">{{ r.missing_text }}</span></td>
+
+                    <td><input name="first_active_index" value="{{ r.first_active_index if r.first_active_index is not none else '' }}" style="width:105px; padding:8px;"></td>
+                    <td><input name="last_active_index" value="{{ r.last_active_index if r.last_active_index is not none else '' }}" style="width:105px; padding:8px;"></td>
+                    <td><input name="first_inductive_index" value="{{ r.first_inductive_index if r.first_inductive_index is not none else '' }}" style="width:105px; padding:8px;"></td>
+                    <td><input name="last_inductive_index" value="{{ r.last_inductive_index if r.last_inductive_index is not none else '' }}" style="width:105px; padding:8px;"></td>
+                    <td><input name="first_capacitive_index" value="{{ r.first_capacitive_index if r.first_capacitive_index is not none else '' }}" style="width:105px; padding:8px;"></td>
+                    <td><input name="last_capacitive_index" value="{{ r.last_capacitive_index if r.last_capacitive_index is not none else '' }}" style="width:105px; padding:8px;"></td>
+                    <td><button type="submit" class="btn-primary">Kaydet</button></td>
+                </form>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="11">Eksik endeks bulunmuyor.</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

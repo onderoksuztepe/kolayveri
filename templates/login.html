@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <title>KolayVeri Giriş</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/static/style.css" rel="stylesheet">
+</head>
+<body>
+<div class="login-wrap">
+    <div class="card">
+    <div class="login-logo-wrap">
+        <img src="/static/img/kolayveri-logo.png?v=real-logo-1" alt="KolayVeri" class="login-logo">
+    </div>
+
+    
+        <h1>KolayVeri</h1>
+        <p class="small">Portal giriş ekranı</p>
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+        <form method="post" action="/login">
+            <input name="username" placeholder="Kullanıcı adı" required>
+            <input name="password" type="password" placeholder="Şifre" required>
+            <button type="submit">Giriş yap</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

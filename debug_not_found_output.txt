@@ -1,0 +1,102 @@
+NOT_FOUND sayısı: 21
+----------------------------------------------------------------------------------------------------
+AMI: 02778117 | KEY: 2778117 | AD: TİCARİ ASANSÖR2 166
+  meters içinde olası eşleşme: 1
+    {'meter_serial': 'VIK2778117', 'name': 'TİCARİ ASANSÖR2 166', 'multiplier': 1, 'group_id': 'PORTFOY_1'}
+    full: {'_id': ObjectId('692609fd1dbc5b1fa62e0280'), 'meter_serial': 'VIK2778117', 'name': 'TİCARİ ASANSÖR2 166', 'multiplier': 1, 'october_last_value': 18449, 'created_at': '2025-01-01T00:00:00Z', 'updated_at': '2025-01-01T00:00:00Z', 'status': 'not_found', 'status_message': '404 Client Error: Not Found for url: https://ami.mavialp.com/api/v1/clients/company/meters/VIK2778117/read/data/?readed_at__gte=2026-04-30T00%3A00%3A00Z&readed_at__lte=2026-05-02T00%3A00%3A13Z', 'status_updated_at': datetime.datetime(2026, 5, 2, 0, 0, 13, 331000), 'group_id': 'PORTFOY_1'}
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: AEL810044631 | KEY: AEL810044631 | AD: ANA TRAFO PANASU (TR6)2 Jeneratör sıstıcı, gövde ve oda fanlar, redrisör, oda aydınlatma
+  meters içinde olası eşleşme: 1
+    {'meter_serial': 'MSY810044631', 'name': 'Trafo 4', 'multiplier': 20, 'group_id': 'PORTFOY_1'}
+    full: {'_id': ObjectId('692609fd1dbc5b1fa62e028c'), 'meter_serial': 'MSY810044631', 'name': 'Trafo 4', 'multiplier': 20, 'october_last_value': 175, 'created_at': '2025-01-01T00:00:00Z', 'updated_at': '2025-01-01T00:00:00Z', 'status': 'not_found', 'status_message': '404 Client Error: Not Found for url: https://ami.mavialp.com/api/v1/clients/company/meters/MSY810044631/read/data/?readed_at__gte=2026-04-30T00%3A00%3A00Z&readed_at__lte=2026-05-02T00%3A00%3A20Z', 'status_updated_at': datetime.datetime(2026, 5, 2, 0, 0, 20, 614000), 'group_id': 'PORTFOY_1'}
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: AEL810026991 | KEY: AEL810026991 | AD: KÖFTECİ YUSUF2 111-113
+  meters içinde olası eşleşme: 1
+    {'meter_serial': 'MSY810026991', 'name': 'KÖFTECİ YUSUF2', 'multiplier': 50, 'group_id': 'PORTFOY_1'}
+    full: {'_id': ObjectId('692609fd1dbc5b1fa62e0290'), 'meter_serial': 'MSY810026991', 'name': 'KÖFTECİ YUSUF2', 'multiplier': 50, 'october_last_value': 18773, 'created_at': '2025-01-01T00:00:00Z', 'updated_at': '2025-01-01T00:00:00Z', 'status': 'not_found', 'status_message': '404 Client Error: Not Found for url: https://ami.mavialp.com/api/v1/clients/company/meters/MSY810026991/read/data/?readed_at__gte=2026-04-30T00%3A00%3A00Z&readed_at__lte=2026-05-02T00%3A00%3A22Z', 'status_updated_at': datetime.datetime(2026, 5, 2, 0, 0, 22, 726000), 'group_id': 'PORTFOY_1'}
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: AEL810026769 | KEY: AEL810026769 | AD: DÖNER "Y" KÖFTECİ YUSUF 3 115
+  meters içinde olası eşleşme: 1
+    {'meter_serial': 'MSY810026769', 'name': 'KÖFTECİ YUSUF3', 'multiplier': 50, 'group_id': 'PORTFOY_1'}
+    full: {'_id': ObjectId('692609fd1dbc5b1fa62e0291'), 'meter_serial': 'MSY810026769', 'name': 'KÖFTECİ YUSUF3', 'multiplier': 50, 'october_last_value': 2137, 'created_at': '2025-01-01T00:00:00Z', 'updated_at': '2025-01-01T00:00:00Z', 'status': 'not_found', 'status_message': '404 Client Error: Not Found for url: https://ami.mavialp.com/api/v1/clients/company/meters/MSY810026769/read/data/?readed_at__gte=2026-04-30T00%3A00%3A00Z&readed_at__lte=2026-05-02T00%3A00%3A22Z', 'status_updated_at': datetime.datetime(2026, 5, 2, 0, 0, 23, 223000), 'group_id': 'PORTFOY_1'}
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: 02378736 | KEY: 2378736 | AD: GARAJ FORM B-3 D-12
+  meters içinde olası eşleşme: 0
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: 02386493 | KEY: 2386493 | AD: STATEMENT DEPO 71  Z-K A-4
+  meters içinde olası eşleşme: 0
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: 02386341 | KEY: 2386341 | AD: NA TAMAAM DÜKKAN 72 Z-K A-4
+  meters içinde olası eşleşme: 0
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: 02386259 | KEY: 2386259 | AD: NA TAMAAM DÜKKAN 74 Z-K A-4
+  meters içinde olası eşleşme: 0
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: 02386314 | KEY: 2386314 | AD: Z-75 A-4 BLOK
+  meters içinde olası eşleşme: 0
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: 05077584 | KEY: 5077584 | AD: B-1 KAT DÜKKAN 57
+  meters içinde olası eşleşme: 0
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: 02386317 | KEY: 2386317 | AD: RİTİM SİWİM
+  meters içinde olası eşleşme: 0
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: 02385994 | KEY: 2385994 | AD: 29 FUNDORA DEPO (RİTİM SİWİM YANI)
+  meters içinde olası eşleşme: 0
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: 02386383 | KEY: 2386383 | AD: DÜRÜMLE 176
+  meters içinde olası eşleşme: 0
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: 02778295 | KEY: 2778295 | AD: ESKİ MAZAYA OFİS SAYACI
+  meters içinde olası eşleşme: 0
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: AEL810028051 | KEY: AEL810028051 | AD: STATEMENT 177
+  meters içinde olası eşleşme: 1
+    {'meter_serial': 'MSY810028051', 'name': 'STATEMENT', 'multiplier': 25, 'group_id': 'PORTFOY_1'}
+    full: {'_id': ObjectId('692609fd1dbc5b1fa62e02e0'), 'meter_serial': 'MSY810028051', 'name': 'STATEMENT', 'multiplier': 25, 'october_last_value': 9247, 'created_at': '2025-01-01T00:00:00Z', 'updated_at': '2025-01-01T00:00:00Z', 'status': 'not_found', 'status_message': '404 Client Error: Not Found for url: https://ami.mavialp.com/api/v1/clients/company/meters/MSY810028051/read/data/?readed_at__gte=2026-04-30T00%3A00%3A00Z&readed_at__lte=2026-05-02T00%3A01%3A02Z', 'status_updated_at': datetime.datetime(2026, 5, 2, 0, 1, 2, 637000), 'group_id': 'PORTFOY_1'}
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: AEL810043851 | KEY: AEL810043851 | AD: ANA TRAFO PANASU (TR 1)2 Jeneratör sıstıcı, gövde ve oda fanlar, redrisör, oda aydınlatma
+  meters içinde olası eşleşme: 1
+    {'meter_serial': 'MSY810043851', 'name': 'Trafo 1', 'multiplier': 20, 'group_id': 'PORTFOY_1'}
+    full: {'_id': ObjectId('692609fd1dbc5b1fa62e02e9'), 'meter_serial': 'MSY810043851', 'name': 'Trafo 1', 'multiplier': 20, 'october_last_value': 222, 'created_at': '2025-01-01T00:00:00Z', 'updated_at': '2025-01-01T00:00:00Z', 'status': 'not_found', 'status_message': '404 Client Error: Not Found for url: https://ami.mavialp.com/api/v1/clients/company/meters/MSY810043851/read/data/?readed_at__gte=2026-04-30T00%3A00%3A00Z&readed_at__lte=2026-05-02T00%3A01%3A07Z', 'status_updated_at': datetime.datetime(2026, 5, 2, 0, 1, 7, 398000), 'group_id': 'PORTFOY_1'}
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: AEL810044603 | KEY: AEL810044603 | AD: ANA TRAFO PANASU (TR 2)2 Jeneratör sıstıcı, gövde ve oda fanlar, redrisör, oda aydınlatma
+  meters içinde olası eşleşme: 1
+    {'meter_serial': 'MSY810044603', 'name': 'Trafo 2', 'multiplier': 20, 'group_id': 'PORTFOY_1'}
+    full: {'_id': ObjectId('692609fd1dbc5b1fa62e02ea'), 'meter_serial': 'MSY810044603', 'name': 'Trafo 2', 'multiplier': 20, 'october_last_value': 702, 'created_at': '2025-01-01T00:00:00Z', 'updated_at': '2025-01-01T00:00:00Z', 'status': 'not_found', 'status_message': '404 Client Error: Not Found for url: https://ami.mavialp.com/api/v1/clients/company/meters/MSY810044603/read/data/?readed_at__gte=2026-04-30T00%3A00%3A00Z&readed_at__lte=2026-05-02T00%3A01%3A07Z', 'status_updated_at': datetime.datetime(2026, 5, 2, 0, 1, 7, 880000), 'group_id': 'PORTFOY_1'}
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: AEL810027046 | KEY: AEL810027046 | AD: TİCARİ KAZAN
+  meters içinde olası eşleşme: 1
+    {'meter_serial': 'MSY810027046', 'name': 'TİCARİ KAZAN', 'multiplier': 200, 'group_id': 'PORTFOY_1'}
+    full: {'_id': ObjectId('692609fd1dbc5b1fa62e02ee'), 'meter_serial': 'MSY810027046', 'name': 'TİCARİ KAZAN', 'multiplier': 200, 'october_last_value': 3067, 'created_at': '2025-01-01T00:00:00Z', 'updated_at': '2025-01-01T00:00:00Z', 'status': 'not_found', 'status_message': '404 Client Error: Not Found for url: https://ami.mavialp.com/api/v1/clients/company/meters/MSY810027046/read/data/?readed_at__gte=2026-04-30T00%3A00%3A00Z&readed_at__lte=2026-05-02T00%3A01%3A09Z', 'status_updated_at': datetime.datetime(2026, 5, 2, 0, 1, 9, 855000), 'group_id': 'PORTFOY_1'}
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: 02386333 | KEY: 2386333 | AD: Z-KA-5 161
+  meters içinde olası eşleşme: 0
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: 02385962 | KEY: 2385962 | AD: NA TAMAAM DÜKKAN 169
+  meters içinde olası eşleşme: 0
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------
+AMI: 02386010 | KEY: 2386010 | AD: NA TAMAAM DÜKKAN 4
+  meters içinde olası eşleşme: 0
+  readings içinde olası eşleşme ilk kontrol: 0
+----------------------------------------------------------------------------------------------------

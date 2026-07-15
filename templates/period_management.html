@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Dönem Yönetimi</div>
+        <div class="small">Sadece admin kullanıcılar görebilir.</div>
+    </div>
+    <div class="small" style="text-align:right;">
+        Aktif dönem: {{ period }}
+    </div>
+</div>
+
+<div class="card">
+    <h2>Dönemler</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Dönem</th>
+                <th>Başlangıç</th>
+                <th>Bitiş</th>
+                <th>Durum</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for p in periods %}
+            <tr>
+                <td>{{ p.id }}</td>
+                <td>{{ p.period_code }}</td>
+                <td>{{ p.start_date }}</td>
+                <td>{{ p.end_date }}</td>
+                <td>
+                    <span class="badge {% if p.status == 'open' %}badge-ok{% else %}badge-pending{% endif %}">
+                        {{ 'Açık' if p.status == 'open' else 'Kapalı' if p.status == 'closed' else p.status }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if rollover %}
+<div class="card">
+    <h2>Dönem Devir Dry-Run</h2>
+    <p class="small">
+        Bu ekran sadece kontrol amaçlıdır. Şu an buradan dönem kapama işlemi yapılmaz.
+    </p>
+
+    <div class="grid">
+        <div class="card">
+            <div class="metric-label">Kaynak Dönem</div>
+            <div class="metric-value">{{ rollover.source.period_code }}</div>
+            <div class="small">{{ 'Açık' if rollover.source.status == 'open' else 'Kapalı' if rollover.source.status == 'closed' else rollover.source.status }}</div>
+        </div>
+
+        <div class="card">
+            <div class="metric-label">Hedef Dönem</div>
+            <div class="metric-value">{{ rollover.target_code }}</div>
+            <div class="small">
+                {% if rollover.target %}
+                    Mevcut: {{ 'Açık' if rollover.target.status == 'open' else 'Kapalı' if rollover.target.status == 'closed' else rollover.target.status }}
+                {% else %}
+                    Henüz oluşturulmamış
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="metric-label">Aktif Devredecek</div>
+            <div class="metric-value metric-ok">{{ rollover.active_ready }}</div>
+            <div class="small">Eksik: {{ rollover.active_missing }}</div>
+        </div>
+
+        <div class="card">
+            <div class="metric-label">Tam Reaktif Devredecek</div>
+            <div class="metric-value metric-ok">{{ rollover.reactive_ready }}</div>
+            <div class="small">Eksik: {{ rollover.reactive_missing }}</div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <div class="metric-label">Toplam Sayaç</div>
+            <div class="metric-value">{{ rollover.total }}</div>
+        </div>
+
+        <div class="card">
+            <div class="metric-label">Endüktif Son Endeks Var</div>
+            <div class="metric-value">{{ rollover.inductive_ready }}</div>
+        </div>
+
+        <div class="card">
+            <div class="metric-label">Kapasitif Son Endeks Var</div>
+            <div class="metric-value">{{ rollover.capacitive_ready }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Devir Hazırlık Özeti</h2>
+    <p class="small">
+        Bu özet, kaynak dönem son endekslerinin sonraki döneme ilk endeks olarak devredilmesine göre hesaplanır.
+    </p>
+
+    <div class="grid">
+        <div class="card">
+            <div class="metric-label">Tam Hazır</div>
+            <div class="metric-value metric-ok">{{ rollover.ready_all }}</div>
+            <div class="small">Aktif + endüktif + kapasitif tamam</div>
+        </div>
+
+        <div class="card">
+            <div class="metric-label">Sadece Reaktif Eksik</div>
+            <div class="metric-value metric-warn">{{ rollover.reactive_only_missing }}</div>
+            <div class="small">Aktif var, reaktif eksik</div>
+        </div>
+
+        <div class="card">
+            <div class="metric-label">Aktif + Reaktif Eksik</div>
+            <div class="metric-value metric-danger">{{ rollover.active_and_reactive_missing }}</div>
+            <div class="small">Devire eksik gider</div>
+        </div>
+
+        <div class="card">
+            <div class="metric-label">Sadece Aktif Eksik</div>
+            <div class="metric-value metric-warn">{{ rollover.active_only_missing }}</div>
+            <div class="small">Reaktif var, aktif eksik</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Eksik / Kontrol Edilecek Sayaçlar</h2>
+    <p class="small">
+        Bu listedeki sayaçlarda dönem devri sırasında aktif veya reaktif ilk endeks eksik kalabilir.
+    </p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Sıra</th>
+                <th>Sayaç No</th>
+                <th>Sayaç Adı</th>
+                <th>Grup</th>
+                <th>Eksik</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in rollover.missing_rows %}
+            <tr>
+                <td>{{ r.sort_order or "-" }}</td>
+                <td>{{ r.meter_serial }}</td>
+                <td>{{ r.meter_name }}</td>
+                <td>
+                    <span class="badge {% if r.missing_group == 'Aktif + Reaktif Eksik' %}badge-negative{% else %}badge-pending{% endif %}">
+                        {{ r.missing_group }}
+                    </span>
+                </td>
+                <td><span class="badge badge-pending">{{ r.missing_text }}</span></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5">Eksik sayaç bulunmuyor.</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

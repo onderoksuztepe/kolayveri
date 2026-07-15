@@ -1,0 +1,508 @@
+:root {
+    --bg: #f6f7fb;
+    --card: #ffffff;
+    --text: #111827;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --blue: #4f46e5;
+    --red: #dc2626;
+    --amber: #d97706;
+    --green: #16a34a;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 240px;
+    background: #111827;
+    color: white;
+    padding: 24px 18px;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 30px;
+}
+
+.nav a {
+    display: block;
+    padding: 12px 14px;
+    border-radius: 10px;
+    color: #d1d5db;
+    margin-bottom: 6px;
+}
+
+.nav a:hover,
+.nav a.active {
+    background: #1f2937;
+    color: #fff;
+}
+
+.content {
+    flex: 1;
+    padding: 28px;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.metric-label {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.metric-value {
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.metric-danger {
+    color: var(--red);
+}
+
+.metric-warn {
+    color: var(--amber);
+}
+
+.metric-ok {
+    color: var(--green);
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+th, td {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    color: #374151;
+    font-weight: 700;
+    background: #f9fafb;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.badge-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-negative {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.login-wrap {
+    max-width: 380px;
+    margin: 100px auto;
+}
+
+input {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+button {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 10px;
+    background: var(--blue);
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.error {
+    color: var(--red);
+    margin-bottom: 12px;
+}
+
+.small {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.badge-ok {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.site-selector {
+    margin-bottom: 24px;
+    padding: 12px;
+    background: #1f2937;
+    border-radius: 12px;
+}
+
+.site-label {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 8px;
+}
+
+.site-selector select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: #ffffff;
+    color: #111827;
+    font-size: 13px;
+}
+
+.site-locked {
+    background: #ffffff;
+    color: #111827;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.filter-form {
+    margin: 0;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.filter-grid label {
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+.filter-grid input,
+.filter-grid select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.filter-actions button,
+.btn-secondary {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 0;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-secondary {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.table-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 900px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* KolayVeri brand refresh */
+:root {
+    --kv-blue: #2d7bd9;
+    --kv-blue-dark: #1f64b8;
+    --kv-navy: #0f1d40;
+    --kv-sidebar: #101a33;
+    --kv-bg: #f5f7fb;
+    --kv-card: #ffffff;
+    --kv-border: #e6ebf2;
+    --kv-text: #15233b;
+    --kv-muted: #6b7280;
+    --kv-orange: #f3b355;
+    --kv-pink: #ef7a87;
+    --kv-purple: #7e49d3;
+}
+
+body {
+    background: var(--kv-bg);
+    color: var(--kv-text);
+}
+
+.sidebar {
+    background: linear-gradient(180deg, #0c1735 0%, #12244d 100%);
+}
+
+.logo {
+    padding: 18px 14px 16px 14px;
+    text-align: center;
+}
+
+.brand-logo {
+    display: block;
+    width: 100%;
+    max-width: 205px;
+    height: auto;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 8px 10px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.10);
+}
+
+.nav a {
+    color: rgba(255,255,255,.86);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: block;
+    margin-bottom: 6px;
+    text-decoration: none;
+    transition: all .18s ease;
+}
+
+.nav a:hover,
+.nav a.active {
+    background: var(--kv-blue);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(45,123,217,.28);
+}
+
+.site-selector {
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 16px;
+}
+
+.card {
+    border: 1px solid var(--kv-border);
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(16,33,63,.05);
+}
+
+.page-title,
+.metric-value,
+.stat-value {
+    color: var(--kv-navy);
+}
+
+.metric-ok {
+    color: var(--kv-blue);
+}
+
+.metric-warn {
+    color: var(--kv-orange);
+}
+
+.metric-danger {
+    color: var(--kv-pink);
+}
+
+.btn-primary,
+button[type="submit"] {
+    background: var(--kv-blue);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+}
+
+.btn-primary:hover,
+button[type="submit"]:hover {
+    background: var(--kv-blue-dark);
+}
+
+.login-logo-wrap {
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.login-logo {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Real KolayVeri PNG logo final sizing */
+.brand-logo {
+    display: block;
+    width: 100%;
+    max-width: 210px;
+    height: auto;
+    object-fit: contain;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 8px 10px;
+}
+
+.login-logo-wrap {
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.login-logo {
+    display: block;
+    width: 100%;
+    max-width: 390px;
+    height: auto;
+    object-fit: contain;
+    margin: 0 auto;
+}
+
+/* Billing allocation chart */
+.kv-bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.kv-bar-row {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.4fr) 3fr 140px;
+    gap: 12px;
+    align-items: center;
+}
+
+.kv-bar-label {
+    font-size: 14px;
+    color: var(--kv-text, #15233b);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.kv-bar-wrap {
+    height: 14px;
+    background: #eef3f8;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.kv-bar {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--kv-blue, #2d7bd9), #7e49d3);
+}
+
+.kv-bar-value {
+    font-size: 13px;
+    color: var(--kv-muted, #6b7280);
+    text-align: right;
+}
+
+@media (max-width: 900px) {
+    .kv-bar-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .kv-bar-value {
+        text-align: left;
+    }
+}
+
+/* Logo taşma düzeltmesi */
+.sidebar {
+    overflow: hidden;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 18px 18px 14px 18px;
+    min-height: 64px;
+    max-height: 76px;
+    overflow: hidden;
+}
+
+.brand img,
+.brand-logo {
+    width: 180px !important;
+    max-width: 180px !important;
+    height: auto !important;
+    max-height: 56px !important;
+    object-fit: contain !important;
+    display: block !important;
+}

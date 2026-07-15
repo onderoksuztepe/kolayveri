@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="topbar">
+    <div>
+        <div class="page-title">Geçmiş Veri Yükleme</div>
+        <div class="small">Sadece admin kullanıcılar içindir.</div>
+    </div>
+</div>
+
+{% if imported %}
+<div class="card" style="margin-bottom:16px; border-color:#b7ebc6;">
+    <strong>Yükleme tamamlandı.</strong>
+    <div class="small">
+        Tip: {{ mode }} / İşlenen kayıt: {{ imported }} / Atlanan kayıt: {{ skipped }}
+    </div>
+</div>
+{% endif %}
+
+<div class="grid">
+    <div class="card">
+        <h2>Aylık Tüketim Matrisi Yükle</h2>
+        <p class="small">
+            Eski ekrandaki gibi sayaçlar satırda, aylar sütunda olan CSV dosyası.
+        </p>
+
+        <div class="small" style="margin-bottom:12px;">
+            Beklenen kolonlar:
+            <br>
+            <strong>Sayaç Seri No</strong>,
+            <strong>Firma Adı ve Nereye Ait</strong>,
+            <strong>Çarpan Değeri</strong>,
+            <strong>Eylül 2025</strong>,
+            <strong>Ekim 2025</strong>...
+        </div>
+
+        <form method="post" action="/admin-data-import" enctype="multipart/form-data">
+            <input type="hidden" name="import_type" value="monthly_matrix">
+            <input type="file" name="file" accept=".csv" required>
+            <div style="margin-top:14px;">
+                <button type="submit" class="btn-primary">Matrisi Yükle</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Dönem Detay CSV Yükle</h2>
+        <p class="small">
+            Aktif, reaktif ve fatura girdilerini satır bazlı yüklemek için.
+        </p>
+
+        <div class="small" style="margin-bottom:12px;">
+            Beklenen kolonlar:
+            <br>
+            <strong>period_code</strong>,
+            <strong>meter_serial</strong>,
+            <strong>active_consumption</strong>,
+            <strong>inductive_consumption</strong>,
+            <strong>capacitive_consumption</strong>,
+            <strong>main_meter_consumption</strong>,
+            <strong>unit_price</strong>
+        </div>
+
+        <form method="post" action="/admin-data-import" enctype="multipart/form-data">
+            <input type="hidden" name="import_type" value="period_detail">
+            <input type="file" name="file" accept=".csv" required>
+            <div style="margin-top:14px;">
+                <button type="submit" class="btn-primary">Detay CSV Yükle</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Notlar</h2>
+    <p class="small">
+        Yüklenen eski dönemler otomatik olarak <strong>Kapalı</strong> açılır.
+        Sayaç seri no eşleşmezse ilgili satır atlanır.
+        Faturalar ekranında ana sayaç tüketimi ve birim fiyat ayrıca girilebilir veya detay CSV ile yüklenebilir.
+    </p>
+</div>
+
+{% endblock %}

@@ -1,0 +1,29 @@
+# secrets
+.env
+.env_*
+*.env
+*.key
+*.pem
+*.crt
+
+# python
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# backups / dumps
+backups/
+*.bak*
+*.sql
+*.dump
+*.tar.gz
+*.zip
+
+# runtime
+*.log
+/tmp/
+.DS_Store
+
+# local files
+.env_portal

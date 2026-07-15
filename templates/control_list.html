@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="topbar">
+    <div>
+        <div class="page-title">Kontrol Listesi</div>
+        <div class="small">Aktif dönem: {{ period }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Sıra</th>
+                <th>Sayaç No</th>
+                <th>Sayaç Adı</th>
+                <th>Cihaz No</th>
+                <th>Çarpan</th>
+                <th>İlk Endeks</th>
+                <th>Son Endeks</th>
+                <th>Durum</th>
+                <th>Aksiyon</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in rows %}
+            <tr>
+                <td>{{ r.sort_order }}</td>
+                <td>{{ r.meter_serial }}</td>
+                <td>{{ r.meter_name }}</td>
+                <td>{{ r.device_no }}</td>
+                <td>{{ r.multiplier }}</td>
+                <td>{{ r.first_active_index if r.first_active_index is not none else "" }}</td>
+                <td>{{ r.last_active_index if r.last_active_index is not none else "" }}</td>
+                <td>{{ r.calculation_status_tr if r.calculation_status_tr else r.calculation_status }}</td>
+                <td>{{ r.suggested_action if r.suggested_action else r.error_message }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Dict, Any
-
+from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient
@@ -9,7 +9,7 @@ from pymongo import MongoClient
 #  KONFİG
 # ============================
 
-MONGO_URI = "mongodb+srv://onderoksuztepe_db:OnderKolayveri2025@kolayveri.t0lyzeu.mongodb.net/"
+MONGO_URI = "mongodb://localhost:27017"
 DB_NAME = "amimavialp"
 METERS_COLL = "meters"
 READINGS_COLL = "readings"
@@ -38,10 +38,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # ============================
 #  HELPERS
 # ============================
+
+TR_TZ = timezone(timedelta(hours=3))
+
 
 def mongo_to_dict(doc) -> Optional[Dict[str, Any]]:
     """Mongo dokümanını JSON friendly hale getir (_id hariç)."""
@@ -50,6 +52,42 @@ def mongo_to_dict(doc) -> Optional[Dict[str, Any]]:
     d = dict(doc)
     d.pop("_id", None)
     return d
+
+
+def to_tr_iso(dt: Any) -> Optional[str]:
+    """
+    Her türlü datetime'i TSİ (UTC+3) ISO string'e çevirir.
+    - dt None ise None döner
+    - dt naive ise UTC varsayılır
+    """
+    if dt is None:
+        return None
+
+    if not isinstance(dt, datetime):
+        return str(dt)
+
+    # tz bilgisi yoksa UTC varsay
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+
+    dt_tr = dt.astimezone(TR_TZ)
+    return dt_tr.isoformat()
+
+
+def format_tr_number(v: Any, decimals: int = 3) -> Optional[str]:
+    """
+    Float sayıyı TR formatında string'e çevirir.
+    Örn: 1234.56789 -> '1234,568'
+    """
+    if v is None:
+        return None
+    try:
+        f = float(v)
+    except Exception:
+        return str(v)
+
+    s = f"{f:.{decimals}f}"
+    return s.replace(".", ",")
 
 
 def get_effective_period_kwh(m: Dict[str, Any]) -> Optional[float]:
@@ -87,6 +125,12 @@ def get_effective_period_kwh(m: Dict[str, Any]) -> Optional[float]:
             return None
 
     return None
+
+
+class ReadingOut(BaseModel):
+    meter_serial: str
+    time: datetime
+    value: float
 
 
 # ============================
@@ -346,6 +390,7 @@ def api_billing_subs(group_id: str, period: Optional[str] = None):
 
     return result
 
+
 @app.get("/api/meters/last-readings", response_model=List[dict])
 def api_last_readings(
     group_id: Optional[str] = None,
@@ -356,14 +401,19 @@ def api_last_readings(
     - meters.last_reading.time
     - meters.last_reading.value
     """
-    query: Dict[str, Any] = {}
+    query: Dict[str, Any] = {"ami_master_updated_at": {"$exists": True}}
 
     if group_id:
         query["group_id"] = group_id
     if status:
         query["status"] = status
 
-    meters = list(meters_col.find(query))
+    meters = list(
+        meters_col.find(query).sort([
+            ("sort_order", 1),
+            ("meter_serial", 1),
+        ])
+    )
 
     result: List[Dict[str, Any]] = []
 
@@ -373,12 +423,10 @@ def api_last_readings(
 
         t = lr.get("time")
         v = lr.get("value")
+        ind_v = lr.get("inductive_value")
+        cap_v = lr.get("capacitive_value")
 
-        # time mongodb'de datetime ise stringe çevirelim
-        if isinstance(t, datetime):
-            t_str = t.isoformat() + "Z"
-        else:
-            t_str = t  # zaten string olabilir
+        t_str = to_tr_iso(t)
 
         try:
             v_val = float(v) if v is not None else None
@@ -390,14 +438,18 @@ def api_last_readings(
                 "meter_serial": md.get("meter_serial"),
                 "name": md.get("name"),
                 "group_id": md.get("group_id"),
+                  "sort_order": md.get("sort_order"),
                 "status": md.get("status"),
                 "last_read_time": t_str,
+                # burada value'yu şimdilik numeric bırakıyorum; istersen bunu da format_tr_number'a çevirebiliriz
                 "last_read_value": v_val,
                 "multiplier": md.get("multiplier"),
             }
         )
 
     return result
+
+
 @app.get("/api/meters/last-vs-previous", response_model=List[dict])
 def api_last_vs_previous(
     group_id: Optional[str] = None,
@@ -407,13 +459,18 @@ def api_last_vs_previous(
     Son endeks ile bir önceki ay sonu endeksini karşılaştırır.
     Şu anda 'previous' olarak meters.october_last_value alanını kullanıyoruz.
     """
-    query: Dict[str, Any] = {}
+    query: Dict[str, Any] = {"ami_master_updated_at": {"$exists": True}}
     if group_id:
         query["group_id"] = group_id
     if status:
         query["status"] = status
 
-    meters = list(meters_col.find(query))
+    meters = list(
+        meters_col.find(query).sort([
+            ("sort_order", 1),
+            ("meter_serial", 1),
+        ])
+    )
     result: List[Dict[str, Any]] = []
 
     for m in meters:
@@ -421,18 +478,26 @@ def api_last_vs_previous(
         lr = md.get("last_reading") or {}
         t = lr.get("time")
         v = lr.get("value")
+        ind_v = lr.get("inductive_value")
+        cap_v = lr.get("capacitive_value")
 
-        # time -> string
-        if isinstance(t, datetime):
-            t_str = t.isoformat() + "Z"
-        else:
-            t_str = t
+        t_str = to_tr_iso(t)
 
         # son endeks
         try:
             last_val = float(v) if v is not None else None
         except Exception:
             last_val = None
+
+        try:
+            last_inductive_val = float(ind_v) if ind_v is not None else None
+        except Exception:
+            last_inductive_val = None
+
+        try:
+            last_capacitive_val = float(cap_v) if cap_v is not None else None
+        except Exception:
+            last_capacitive_val = None
 
         # önceki ay son endeksi (şimdilik october_last_value)
         prev_raw = md.get("october_last_value")
@@ -454,6 +519,7 @@ def api_last_vs_previous(
             raw_delta = None
             energy_delta = None
 
+        # Excel/Softr için TR formatlı string döndür
         result.append(
             {
                 "meter_serial": md.get("meter_serial"),
@@ -461,15 +527,19 @@ def api_last_vs_previous(
                 "group_id": md.get("group_id"),
                 "status": md.get("status"),
                 "multiplier": mul,
-                "previous_end_value": prev_val,
+                "previous_end_value": format_tr_number(prev_val),   # Önceki Ay Son Endeks
                 "last_read_time": t_str,
-                "last_read_value": last_val,
-                "raw_delta": raw_delta,            # sayaç endeks farkı
-                "delta_kwh": energy_delta,         # çarpanlı kWh farkı
+                "last_read_value": format_tr_number(last_val),      # Son Okunan Endeks
+                "last_inductive_value": format_tr_number(last_inductive_val),
+                "last_capacitive_value": format_tr_number(last_capacitive_val),
+                "raw_delta": format_tr_number(raw_delta),           # sayaç endeks farkı
+                "delta_kwh": format_tr_number(energy_delta),       # çarpanlı kWh farkı
             }
         )
 
     return result
+
+
 @app.get("/api/meter-readings", response_model=List[dict])
 def api_meter_readings(
     group_id: Optional[str] = None,
@@ -526,11 +596,7 @@ def api_meter_readings(
         t = rd.get("time")
         v = rd.get("value")
 
-        # time -> string
-        if isinstance(t, datetime):
-            t_str = t.isoformat() + "Z"
-        else:
-            t_str = t
+        t_str = to_tr_iso(t)
 
         try:
             index_val = float(v) if v is not None else None
@@ -555,10 +621,294 @@ def api_meter_readings(
                 "status": mi.get("status"),
                 "multiplier": mul,
                 "read_time": t_str,
-                "index_value": index_val,   # sayaç üzerindeki endeks
-                "energy_kwh": energy_kwh,   # çarpanlı kWh (anlık endeks*katsayı)
+                "index_value": format_tr_number(index_val),   # sayaç üzerindeki endeks (TR string)
+                "energy_kwh": format_tr_number(energy_kwh),   # çarpanlı kWh (TR string)
             }
         )
 
     return result
 
+
+@app.get("/api/readings/log")
+def list_readings_log(
+    meter_serial: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 500,
+):
+    """
+    readings koleksiyonundaki tüm okumaları döner.
+    Ayrıca meters koleksiyonundan: meter_name ve multiplier (çarpan) eklenir.
+    - En yeni okuma en üstte
+    Softr için:
+    {
+      "records": [...],
+      "total": <int>
+    } döner.
+    """
+
+    match_stage: Dict[str, Any] = {}
+    if meter_serial:
+        match_stage["meter_serial"] = meter_serial
+
+    pipeline = [
+        {"$match": match_stage},
+        {"$sort": {"time": -1}},
+        {"$skip": skip},
+        {"$limit": limit},
+        {
+            "$lookup": {
+                "from": "meters",
+                "localField": "meter_serial",
+                "foreignField": "meter_serial",
+                "as": "meter_info"
+            }
+        },
+        {"$unwind": "$meter_info"},
+        {
+            "$project": {
+                "_id": 0,
+                "meter_serial": 1,
+                "time": 1,
+                "value": 1,
+                "name": "$meter_info.name",
+                "multiplier": "$meter_info.multiplier"
+            }
+        }
+    ]
+
+    records: List[Dict[str, Any]] = list(readings_col.aggregate(pipeline))
+
+    # time ve value alanlarını TSİ ve TR number formatına çevir
+    for r in records:
+        r["time"] = to_tr_iso(r.get("time"))
+        r["value"] = format_tr_number(r.get("value"))
+
+    total = len(records)
+
+    return {
+        "records": records,
+        "total": total,
+    }
+
+# =========================
+# KolayVeri Automation Auth - inserted before automation endpoints
+# =========================
+import os
+from fastapi import Header, HTTPException
+
+KOLAYVERI_API_KEY = os.getenv("KOLAYVERI_API_KEY", "")
+
+def _require_kolayveri_key(x_kolayveri_key: str | None):
+    if not KOLAYVERI_API_KEY:
+        raise HTTPException(status_code=500, detail="API key server tarafında tanımlı değil")
+    if x_kolayveri_key != KOLAYVERI_API_KEY:
+        raise HTTPException(status_code=401, detail="Yetkisiz erişim")
+
+
+# =========================
+# KolayVeri Automation API
+# =========================
+
+import psycopg2
+import psycopg2.extras
+from decimal import Decimal
+from datetime import date, datetime
+
+
+PG_DB_CONFIG = {
+    "host": "127.0.0.1",
+    "dbname": "kolayveri_db",
+    "user": "kolayveri_user",
+    "password": "Kv2026ChangeMe123",
+    "port": 5432,
+}
+
+
+def _json_safe(value):
+    if isinstance(value, Decimal):
+        return float(value)
+    if isinstance(value, (datetime, date)):
+        return value.isoformat()
+    return value
+
+
+def _rows_to_json(rows):
+    result = []
+    for row in rows:
+        result.append({k: _json_safe(v) for k, v in dict(row).items()})
+    return result
+
+
+@app.get("/api/automation/dashboard")
+def automation_dashboard(period: str | None = None, x_kolayveri_key: str | None = Header(None)):
+    _require_kolayveri_key(x_kolayveri_key)
+    conn = psycopg2.connect(**PG_DB_CONFIG)
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                """
+                SELECT *
+                FROM automation_dashboard
+                WHERE period_code = COALESCE(
+                    %s,
+                    (
+                        SELECT period_code
+                        FROM periods
+                        WHERE status = 'open'
+                        ORDER BY start_date DESC
+                        LIMIT 1
+                    )
+                )
+                """,
+                (period,),
+            )
+            rows = cur.fetchall()
+            return {
+                "period": rows[0]["period_code"] if rows else period,
+                "data": _rows_to_json(rows),
+            }
+    finally:
+        conn.close()
+
+
+@app.get("/api/automation/control-list")
+def automation_control_list(period: str | None = None, only_errors: bool = True, x_kolayveri_key: str | None = Header(None)):
+    _require_kolayveri_key(x_kolayveri_key)
+    conn = psycopg2.connect(**PG_DB_CONFIG)
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            if only_errors:
+                cur.execute(
+                    """
+                    SELECT *
+                    FROM period_meter_control_list
+                    WHERE period_code = COALESCE(
+                        %s,
+                        (
+                            SELECT period_code
+                            FROM periods
+                            WHERE status = 'open'
+                            ORDER BY start_date DESC
+                            LIMIT 1
+                        )
+                    )
+                      AND calculation_status <> 'calculated'
+                    ORDER BY sort_order NULLS LAST
+                    """,
+                    (period,),
+                )
+            else:
+                cur.execute(
+                    """
+                    SELECT *
+                    FROM period_meter_control_list
+                    WHERE period_code = COALESCE(
+                        %s,
+                        (
+                            SELECT period_code
+                            FROM periods
+                            WHERE status = 'open'
+                            ORDER BY start_date DESC
+                            LIMIT 1
+                        )
+                    )
+                    ORDER BY sort_order NULLS LAST
+                    """,
+                    (period,),
+                )
+
+            rows = cur.fetchall()
+            return {
+                "period": rows[0]["period_code"] if rows else period,
+                "only_errors": only_errors,
+                "count": len(rows),
+                "data": _rows_to_json(rows),
+            }
+    finally:
+        conn.close()
+
+# =========================
+# KolayVeri Automation Auth
+# =========================
+
+import os
+from fastapi import Header, HTTPException
+
+KOLAYVERI_API_KEY = os.getenv("KOLAYVERI_API_KEY", "")
+
+
+def _require_kolayveri_key(x_kolayveri_key: str | None):
+    if not KOLAYVERI_API_KEY:
+        raise HTTPException(status_code=500, detail="API key server tarafında tanımlı değil")
+    if x_kolayveri_key != KOLAYVERI_API_KEY:
+        raise HTTPException(status_code=401, detail="Yetkisiz erişim")
+
+@app.get("/api/automation/dashboard-flat")
+def automation_dashboard_flat(x_kolayveri_key: str | None = Header(None)):
+    _require_kolayveri_key(x_kolayveri_key)
+
+    conn = psycopg2.connect(**PG_DB_CONFIG)
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                """
+                SELECT *
+                FROM automation_dashboard
+                WHERE period_code = (
+                    SELECT period_code
+                    FROM periods
+                    WHERE status = 'open'
+                    ORDER BY start_date DESC
+                    LIMIT 1
+                )
+                """
+            )
+            rows = cur.fetchall()
+            return _rows_to_json(rows)
+    finally:
+        conn.close()
+
+
+@app.get("/api/automation/control-list-flat")
+def automation_control_list_flat(only_errors: bool = True, x_kolayveri_key: str | None = Header(None)):
+    _require_kolayveri_key(x_kolayveri_key)
+
+    conn = psycopg2.connect(**PG_DB_CONFIG)
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            if only_errors:
+                cur.execute(
+                    """
+                    SELECT *
+                    FROM period_meter_control_list
+                    WHERE period_code = (
+                        SELECT period_code
+                        FROM periods
+                        WHERE status = 'open'
+                        ORDER BY start_date DESC
+                        LIMIT 1
+                    )
+                      AND calculation_status <> 'calculated'
+                    ORDER BY sort_order NULLS LAST
+                    """
+                )
+            else:
+                cur.execute(
+                    """
+                    SELECT *
+                    FROM period_meter_control_list
+                    WHERE period_code = (
+                        SELECT period_code
+                        FROM periods
+                        WHERE status = 'open'
+                        ORDER BY start_date DESC
+                        LIMIT 1
+                    )
+                    ORDER BY sort_order NULLS LAST
+                    """
+                )
+
+            rows = cur.fetchall()
+            return _rows_to_json(rows)
+    finally:
+        conn.close()
